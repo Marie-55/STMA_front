@@ -34,10 +34,18 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
   String _selectedCategory = "Studies";
   String _priority = "Low";
 
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final period = time.period == DayPeriod.am ? "AM" : "PM";
+    final minute = time.minute.toString().padLeft(2, '0');
+    return "$hour:$minute $period";
+  }
+
   @override
   void initState() {
     super.initState();
-    _selectedDate = "${DateTime.now().day} ${_getMonth(DateTime.now().month)}, ${DateTime.now().year}";
+    _selectedDate =
+        "${DateTime.now().day} ${_getMonth(DateTime.now().month)}, ${DateTime.now().year}";
   }
 
   @override
@@ -69,7 +77,6 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
             ),
           ),
           const SizedBox(height: 24),
-
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -79,14 +86,17 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
               controller: _taskNameController,
               decoration: const InputDecoration(
                 hintText: "Task Name",
-                hintStyle: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w600),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                hintStyle: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: InputBorder.none,
               ),
             ),
           ),
           const SizedBox(height: 16),
-
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -94,23 +104,43 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
             ),
             child: InkWell(
               onTap: () async {
-                final DateTime? picked = await showDatePicker(
+                final DateTime? pickedDate = await showDatePicker(
                   context: context,
                   initialDate: DateTime.now(),
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 365)),
                 );
-                if (picked != null) {
-                  setState(() {
-                    _selectedDate = "${picked.day} ${_getMonth(picked.month)}, ${picked.year}";
-                  });
+
+                if (pickedDate != null) {
+                  final TimeOfDay? pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+
+                  if (pickedTime != null) {
+                    final DateTime fullDateTime = DateTime(
+                      pickedDate.year,
+                      pickedDate.month,
+                      pickedDate.day,
+                      pickedTime.hour,
+                      pickedTime.minute,
+                    );
+
+                    setState(() {
+                      _selectedDate =
+                          "${fullDateTime.day} ${_getMonth(fullDateTime.month)}, ${fullDateTime.year} at ${_formatTime(pickedTime)}";
+                    });
+                  }
                 }
               },
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Row(
                   children: [
-                    Icon(Icons.calendar_month, color: const Color.fromARGB(255, 103, 117, 189), size: 20),
+                    Icon(Icons.calendar_month,
+                        color: const Color.fromARGB(255, 103, 117, 189),
+                        size: 20),
                     const SizedBox(width: 8),
                     const Text(
                       "Deadline",
@@ -122,8 +152,12 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
                     ),
                     const Spacer(),
                     Text(
-                      _selectedDate!,
-                      style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w500),
+                      _selectedDate ?? '',
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(width: 4),
                     const Icon(Icons.arrow_drop_down, color: Colors.black),
@@ -133,7 +167,6 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
             ),
           ),
           const SizedBox(height: 16),
-
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -144,7 +177,8 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
                 _showDurationPicker();
               },
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Row(
                   children: [
                     const Text(
@@ -158,7 +192,10 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
                     const Spacer(),
                     Text(
                       _selectedDuration,
-                      style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(width: 4),
                     const Icon(Icons.arrow_drop_down, color: Colors.black),
@@ -168,7 +205,6 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
             ),
           ),
           const SizedBox(height: 24),
-
           const Text(
             "Category",
             style: TextStyle(
@@ -188,7 +224,6 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
             ],
           ),
           const SizedBox(height: 24),
-
           const Text(
             "Priority",
             style: TextStyle(
@@ -204,7 +239,6 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
           const SizedBox(height: 8),
           _buildPriorityOption("Important", Colors.red),
           const SizedBox(height: 24),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -218,16 +252,19 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
 
                 // Convert duration string to minutes
                 int durationMinutes;
-                String numericPart = _selectedDuration.replaceAll(RegExp(r'[^0-9]'), '');
-                print('Extracted numeric part: $numericPart from $_selectedDuration');
-                
+                String numericPart =
+                    _selectedDuration.replaceAll(RegExp(r'[^0-9]'), '');
+                print(
+                    'Extracted numeric part: $numericPart from $_selectedDuration');
+
                 if (_selectedDuration.contains('hour')) {
-                    durationMinutes = int.parse(numericPart) * 60;
+                  durationMinutes = int.parse(numericPart) * 60;
                 } else {
-                    durationMinutes = int.parse(numericPart);
+                  durationMinutes = int.parse(numericPart);
                 }
 
-                print('Converting duration: ${_selectedDuration} to $durationMinutes minutes');
+                print(
+                    'Converting duration: ${_selectedDuration} to $durationMinutes minutes');
 
                 final task = Task(
                   id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -425,8 +462,18 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
 
   int _getMonthNumber(String month) {
     const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
     ];
     return months.indexOf(month) + 1;
   }
