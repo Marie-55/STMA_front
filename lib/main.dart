@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/bloc/auth/auth_bloc.dart';
 import 'package:frontend/data/auth_repo.dart';
 import 'package:frontend/bloc/navigation/navigation_bloc.dart';
+import 'package:frontend/bloc/pomodoro/pomodoro_bloc.dart';
 import 'views/screens/main_layout.dart';
 
 void main() {
@@ -23,6 +24,10 @@ class MyApp extends StatelessWidget {
       ),
       home: MultiBlocProvider(
         providers: [
+          BlocProvider<PomodoroBloc>(
+            create: (context) => PomodoroBloc(),
+          ),
+          
           BlocProvider<NavigationBloc>(
             create: (context) => NavigationBloc(),
           ),

@@ -1,0 +1,2 @@
+/home/souha/Downloads/group_project/STMA_front/android/app/.cxx/Debug/24211d3h/x86_64/CMakeFiles/edit_cache.dir
+/home/souha/Downloads/group_project/STMA_front/android/app/.cxx/Debug/24211d3h/x86_64/CMakeFiles/rebuild_cache.dir
