@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../models/session.dart';
-import 'package:intl/intl.dart';
 
 class SessionService {
   static const String baseUrl = 'https://stma-back.onrender.com/api/session';
@@ -20,16 +19,12 @@ class SessionService {
         final sessionsData = data['session'] as List;
 
         return sessionsData.map((json) {
-          // The date will be in yyyy-MM-dd format
           final date = json['date'].toString();
-
-          // Handle time format
           String startTime = json['start_time']?.toString() ?? '00:00:00';
 
           return Session(
             id: json['id'].toString(),
-            date:
-                date, // No need to parse and reformat since it's already in the correct format
+            date: date,
             duration: json['duration'] as int,
             startTime: startTime,
             taskId: json['task_id']?.toString() ?? '',
@@ -68,11 +63,25 @@ class SessionService {
           );
         }).toList();
       } else {
-        // If no sessions found for the date, return empty list
         return [];
       }
     } catch (e) {
       throw Exception('Error fetching sessions: $e');
+    }
+  }
+
+  Future<List<dynamic>> fetchSessionsForDay(DateTime date) async {
+    final formattedDate =
+        "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
+    final url = Uri.parse('https:/stma-back.onrender.com/api/day/read/day_sessions/$formattedDate');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['schedule']; // This is a list of session maps
+    } else {
+      return [];
     }
   }
 }

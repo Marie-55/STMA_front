@@ -10,6 +10,9 @@ import 'add_task.dart';
 import '../../bloc/navigation/navigation_bloc.dart';
 import '../../bloc/navigation/navigation_event.dart';
 import 'notification_screen.dart';
+import '../widgets/rescheduling_card.dart';
+import 'package:frontend/models/task.dart';
+import '../widgets/task_detail_modal.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
@@ -52,7 +55,11 @@ class _TasksScreenState extends State<TasksScreen> {
               child: IconButton(
                 icon: const Icon(Icons.notifications, color: Colors.black),
                 onPressed: () {
-                  context.read<NavigationBloc>().add(NavigateToTab(2));
+                  // Navigate to the notification screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => NotificationScreen()),
+                  );
                 },
               ),
             ),
@@ -157,13 +164,13 @@ class _TasksScreenState extends State<TasksScreen> {
                   child: Row(
                     children: [
                       _buildFilterButton(
-                        'All Tasks', 
+                        'All Tasks',
                         !_showRescheduledOnly,
                         () => setState(() => _showRescheduledOnly = false),
                       ),
                       const SizedBox(width: 10),
                       _buildFilterButton(
-                        'To Be Rescheduled', 
+                        'To Be Rescheduled',
                         _showRescheduledOnly,
                         () => setState(() => _showRescheduledOnly = true),
                       ),
@@ -195,24 +202,40 @@ class _TasksScreenState extends State<TasksScreen> {
                           itemCount: displayedTasks.length,
                           itemBuilder: (context, index) {
                             final task = displayedTasks[index];
-                            
-                            // Format the deadline date
-                            String formattedDate;
-                            try {
-                              formattedDate = DateFormat('MMM dd, yyyy').format(task.deadline);
-                            } catch (e) {
-                              print('Error formatting date: $e');
-                              formattedDate = 'Date not set';
-                            }
-
-                            return TaskCard(
-                              title: task.title,
-                              category: task.category,
-                              timeRange: '${task.duration} minutes',
-                              date: formattedDate,
-                              status: task.status,
-                              priority: task.priority,
-                              duration: '${task.duration} minutes',
+                            return GestureDetector(
+                              onTap: () {
+                                if (task.toReschedule) {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: true,
+                                    builder: (context) {
+                                      return ReschedulingCard(
+                                        title: task.title,
+                                        category: task.category,
+                                        missedDate: DateFormat('MMM dd, yyyy').format(task.deadline),
+                                        taskId: int.parse(task.id),
+                                        onReschedule: () {
+                                          Navigator.of(context).pop();
+                                          context.read<TaskBloc>().add(LoadTasks());
+                                        },
+                                        onTaskDeleted: () {
+                                          context.read<TaskBloc>().add(LoadTasks());
+                                        },
+                                      );
+                                    },
+                                  );
+                                }
+                                // else do nothing
+                              },
+                              child: TaskCard(
+                                title: task.title,
+                                category: task.category,
+                                timeRange: '${task.duration} minutes',
+                                date: DateFormat('MMM dd, yyyy').format(task.deadline),
+                                status: task.status,
+                                priority: task.priority,
+                                duration: '${task.duration} minutes',
+                              ),
                             );
                           },
                         ),
@@ -220,6 +243,16 @@ class _TasksScreenState extends State<TasksScreen> {
               ],
             );
           },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AddTaskScreen()),
+            );
+          },
+          backgroundColor: const Color(0xFF5E32E0),
+          child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
     );
