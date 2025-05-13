@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class TaskService {
-  static const String baseUrl = 'http://localhost:5000/api/tasks';
+  static const String baseUrl = 'https://stma-back.onrender.com/api/tasks';
 
   Future<List<Map<String, dynamic>>> fetchAllTasks() async {
     try {

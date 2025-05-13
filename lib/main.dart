@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/bloc/auth/auth_bloc.dart';
@@ -28,7 +27,8 @@ class MyApp extends StatelessWidget {
             create: (context) => NavigationBloc(),
           ),
           BlocProvider<AuthBloc>(
-            create: (context) => AuthBloc(AuthRepository(baseUrl: "http://127.0.0.1:5000/api")),
+            create: (context) => AuthBloc(
+                AuthRepository(baseUrl: "https://stma-back.onrender.com/api")),
           ),
         ],
         child: MainLayout(),
