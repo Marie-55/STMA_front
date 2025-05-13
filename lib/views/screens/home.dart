@@ -11,6 +11,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../screens/notification_screen.dart';
 import '../../bloc/navigation/navigation_bloc.dart';
 import '../../bloc/navigation/navigation_event.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -100,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('HomeScreen build called');
     return BlocProvider(
       create: (context) => SessionBloc(_sessionService),
       child: Scaffold(
@@ -252,75 +255,72 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }
 
-                    if (state.sessions.isEmpty) {
-                      return const Center(
-                        child: Text('No sessions found'),
-                      );
-                    }
+                    return BlocBuilder<DateBloc, DateState>(
+                      builder: (context, dateState) {
+                        print('DateBloc builder called');
+                        final selectedDate = dateState.selectedDate;
+                        print('Selected date: $selectedDate');
 
-                    return ListView.builder(
-                      itemCount: state.sessions.length,
-                      itemBuilder: (context, index) {
-                        final session = state.sessions[index];
-                        final formattedDate = session.date;
-                        
-                        return FutureBuilder<Map<String, dynamic>>(
-                          future: _getTaskDetails(session.taskId),
+                        return FutureBuilder<List<dynamic>>(
+                          future: _sessionService.fetchSessionsForDay(selectedDate),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return const Padding(
                                 padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
                                 child: Center(child: CircularProgressIndicator()),
                               );
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                child: Text(
+                                  'Error: ${snapshot.error}',
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              );
+                            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                              return const Center(
+                                child: Text('No sessions for this day'),
+                              );
+                            } else {
+                              final sessions = snapshot.data!;
+
+                              // Filter sessions based on _selectedFilter
+                              List<dynamic> filteredSessions = sessions;
+                              if (_selectedFilter != 'All') {
+                                filteredSessions = sessions.where((session) {
+                                  final status = session['status']?.toString()?.toLowerCase() ?? '';
+                                  return status == _selectedFilter.toLowerCase();
+                                }).toList();
+                              }
+
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: filteredSessions.length,
+                                itemBuilder: (context, index) {
+                                  final session = filteredSessions[index];
+                                  return FutureBuilder<Map<String, dynamic>>(
+                                    future: _getTaskDetails(session['task_id'].toString()),
+                                    builder: (context, taskSnapshot) {
+                                      if (!taskSnapshot.hasData) {
+                                        return const Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                                          child: Center(child: CircularProgressIndicator()),
+                                        );
+                                      }
+                                      final taskDetails = taskSnapshot.data!;
+                                      return TaskCard(
+                                        title: taskDetails['title'] ?? 'Session ${session['id']}',
+                                        category: taskDetails['category'] ?? '',
+                                        timeRange: session['start_time'] ?? '',
+                                        date: session['date'] ?? '',
+                                        status: taskDetails['status'] ?? '',
+                                        priority: taskDetails['priority']?.toString() ?? '',
+                                        duration: '${session['duration']} min',
+                                      );
+                                    },
+                                  );
+                                },
+                              );
                             }
-
-                            final taskDetails = snapshot.data ?? {
-                              'title': 'Session ${session.taskId}',
-                              'category': 'Studies',
-                              'priority': 'Medium',
-                              'status': 'pending',
-                              'deadline': formattedDate
-                            };
-
-                            print('Raw task details: $taskDetails'); // Debug print
-
-                            // Parse start time
-                            final startTimeParts = session.startTime.split(':');
-                            final startHour = int.parse(startTimeParts[0]);
-                            final startMinute = int.parse(startTimeParts[1]);
-                            
-                            // Calculate end time
-                            final endHour = (startHour + (session.duration ~/ 60)) % 24;
-                            final endMinute = (startMinute + (session.duration % 60)) % 60;
-                            
-                            // Format times to 12-hour format
-                            String formatTime(int hour, int minute) {
-                              final period = hour >= 12 ? 'PM' : 'AM';
-                              final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-                              return '$displayHour:${minute.toString().padLeft(2, '0')}$period';
-                            }
-                            
-                            final timeRange = '${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}';
-
-                            // Get status directly from database
-                            final status = taskDetails['status'];
-                            print('Task ID: ${session.taskId}, Status from DB: $status'); // Debug print
-
-                            // Filter based on selected status
-                            if (_selectedFilter != 'All' && 
-                                status.toLowerCase() != _selectedFilter.toLowerCase()) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return TaskCard(
-                              title: taskDetails['title'],
-                              category: taskDetails['category'],
-                              timeRange: timeRange,
-                              date: formattedDate,
-                              status: status,
-                              priority: taskDetails['priority'],
-                              duration: '${session.duration} minutes',
-                            );
                           },
                         );
                       },
@@ -354,8 +354,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getDayName(int weekday) {
     final days = [
-      'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+       'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
     ];
     return days[weekday - 1];
   }
+
+
 }
