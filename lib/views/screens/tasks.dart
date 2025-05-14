@@ -21,6 +21,33 @@ class TasksScreen extends StatefulWidget {
   State<TasksScreen> createState() => _TasksScreenState();
 }
 
+final dummyTasksToReschedule = [
+  Task(
+      id: '1',
+      user: 'lola',
+      title: 'Task 1',
+      category: 'Work',
+      deadline: DateTime.now(),
+      status: 'Pending',
+      priority: 'High',
+      duration: 30,
+      toReschedule: true,
+      isScheduled: true,
+      isSynched: false),
+  Task(
+      id: '2',
+      user: 'lola',
+      title: 'Task 2',
+      category: 'Personal',
+      deadline: DateTime.now(),
+      status: 'Completed',
+      priority: 'Medium',
+      duration: 45,
+      toReschedule: true,
+      isScheduled: true,
+      isSynched: false),
+];
+
 class _TasksScreenState extends State<TasksScreen> {
   bool _showRescheduledOnly = false;
   final TextEditingController _searchController = TextEditingController();
@@ -46,7 +73,8 @@ class _TasksScreenState extends State<TasksScreen> {
             padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
             child: Text(
               "Your Tasks",
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ),
           actions: [
@@ -80,7 +108,8 @@ class _TasksScreenState extends State<TasksScreen> {
               );
             }
 
-            final allTasks = state.tasks;
+            final allTasks = dummyTasksToReschedule;
+
             final displayedTasks = allTasks.where((task) {
               // Apply search filter
               if (_searchQuery.isNotEmpty) {
@@ -187,7 +216,8 @@ class _TasksScreenState extends State<TasksScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.search_off, size: 48, color: Colors.grey),
+                              const Icon(Icons.search_off,
+                                  size: 48, color: Colors.grey),
                               const SizedBox(height: 16),
                               Text(
                                 _searchQuery.isNotEmpty
@@ -204,6 +234,7 @@ class _TasksScreenState extends State<TasksScreen> {
                             final task = displayedTasks[index];
                             return GestureDetector(
                               onTap: () {
+                                print('hhhhhhhhhhhhhhhhhhh');
                                 if (task.toReschedule) {
                                   showDialog(
                                     context: context,
@@ -212,14 +243,19 @@ class _TasksScreenState extends State<TasksScreen> {
                                       return ReschedulingCard(
                                         title: task.title,
                                         category: task.category,
-                                        missedDate: DateFormat('MMM dd, yyyy').format(task.deadline),
+                                        missedDate: DateFormat('MMM dd, yyyy')
+                                            .format(task.deadline),
                                         taskId: int.parse(task.id),
                                         onReschedule: () {
                                           Navigator.of(context).pop();
-                                          context.read<TaskBloc>().add(LoadTasks());
+                                          context
+                                              .read<TaskBloc>()
+                                              .add(LoadTasks());
                                         },
                                         onTaskDeleted: () {
-                                          context.read<TaskBloc>().add(LoadTasks());
+                                          context
+                                              .read<TaskBloc>()
+                                              .add(LoadTasks());
                                         },
                                       );
                                     },
@@ -231,7 +267,8 @@ class _TasksScreenState extends State<TasksScreen> {
                                 title: task.title,
                                 category: task.category,
                                 timeRange: '${task.duration} minutes',
-                                date: DateFormat('MMM dd, yyyy').format(task.deadline),
+                                date: DateFormat('MMM dd, yyyy')
+                                    .format(task.deadline),
                                 status: task.status,
                                 priority: task.priority,
                                 duration: '${task.duration} minutes',
@@ -244,16 +281,16 @@ class _TasksScreenState extends State<TasksScreen> {
             );
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddTaskScreen()),
-            );
-          },
-          backgroundColor: const Color(0xFF5E32E0),
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
+        // floatingActionButton: FloatingActionButton(
+        //   onPressed: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(builder: (_) => const AddTaskScreen()),
+        //     );
+        //   },
+        //   backgroundColor: const Color(0xFF5E32E0),
+        //   child: const Icon(Icons.add, color: Colors.white),
+        // ),
       ),
     );
   }
