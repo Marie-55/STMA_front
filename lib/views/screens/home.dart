@@ -261,68 +261,71 @@ class _HomeScreenState extends State<HomeScreen> {
                         final selectedDate = dateState.selectedDate;
                         print('Selected date: $selectedDate');
 
-                        return FutureBuilder<List<dynamic>>(
-                          future: _sessionService.fetchSessionsForDay(selectedDate),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const Padding(
-                                padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            } else if (snapshot.hasError) {
-                              return Center(
-                                child: Text(
-                                  'Error: ${snapshot.error}',
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              );
-                            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                              return const Center(
-                                child: Text('No sessions for this day'),
-                              );
-                            } else {
-                              final sessions = snapshot.data!;
+                        return FutureBuilder<List<Session>>(
+  future: _sessionService.fetchSessionsByDate(selectedDate),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    } else if (snapshot.hasError) {
+      return Center(
+        child: Text(
+          'Error: ${snapshot.error}',
+          style: const TextStyle(color: Colors.red),
+        ),
+      );
+    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      return const Center(
+        child: Text('No sessions for this day'),
+      );
+    } else {
+      final sessions = snapshot.data!;
 
-                              // Filter sessions based on _selectedFilter
-                              List<dynamic> filteredSessions = sessions;
-                              if (_selectedFilter != 'All') {
-                                filteredSessions = sessions.where((session) {
-                                  final status = session['status']?.toString()?.toLowerCase() ?? '';
-                                  return status == _selectedFilter.toLowerCase();
-                                }).toList();
-                              }
+      // Filter sessions based on _selectedFilter
+      List<Session> filteredSessions = sessions;
+      if (_selectedFilter != 'All') {
+        filteredSessions = sessions.where((session) {
+          final taskStatus = _taskCache[session.taskId]?['status']?.toString().toLowerCase();
+          return taskStatus == _selectedFilter.toLowerCase();
+        }).toList();
+      }
 
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: filteredSessions.length,
-                                itemBuilder: (context, index) {
-                                  final session = filteredSessions[index];
-                                  return FutureBuilder<Map<String, dynamic>>(
-                                    future: _getTaskDetails(session['task_id'].toString()),
-                                    builder: (context, taskSnapshot) {
-                                      if (!taskSnapshot.hasData) {
-                                        return const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                                          child: Center(child: CircularProgressIndicator()),
-                                        );
-                                      }
-                                      final taskDetails = taskSnapshot.data!;
-                                      return TaskCard(
-                                        title: taskDetails['title'] ?? 'Session ${session['id']}',
-                                        category: taskDetails['category'] ?? '',
-                                        timeRange: session['start_time'] ?? '',
-                                        date: session['date'] ?? '',
-                                        status: taskDetails['status'] ?? '',
-                                        priority: taskDetails['priority']?.toString() ?? '',
-                                        duration: '${session['duration']} min',
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            }
-                          },
-                        );
+      return ListView.builder(
+        shrinkWrap: true,
+        itemCount: filteredSessions.length,
+        itemBuilder: (context, index) {
+          final session = filteredSessions[index];
+          return FutureBuilder<Map<String, dynamic>>(
+            future: _getTaskDetails(session.taskId),
+            builder: (context, taskSnapshot) {
+              if (!taskSnapshot.hasData) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final taskDetails = taskSnapshot.data!;
+              return TaskCard(
+                title: taskDetails['title'] ?? 'Session ${session.id}',
+                category: taskDetails['category'] ?? '',
+                timeRange: session.startTime,
+                date: session.date,
+                status: taskDetails['status'] ?? '',
+                priority: taskDetails['priority']?.toString() ?? '',
+                duration: '${session.duration} min',
+              );
+            },
+          );
+        },
+      );
+    }
+  },
+);
+
+                      
+                      
                       },
                     );
                   },

@@ -5,83 +5,105 @@ import '../../models/session.dart';
 class SessionService {
   static const String baseUrl = 'https://stma-back.onrender.com/api/session';
 
+  /// Fetch all sessions from the backend
   Future<List<Session>> fetchAllSessions() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/read/all'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      );
+      final url = Uri.parse('$baseUrl/');
+      print('Sending GET request to: $url');
+
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+      });
+
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final sessionsData = data['session'] as List;
 
-        return sessionsData.map((json) {
-          final date = json['date'].toString();
-          String startTime = json['start_time']?.toString() ?? '00:00:00';
+        final sessionsData = data['data'];
+        if (sessionsData == null) {
+          print('Warning: data["data"] is null');
+          return [];
+        }
 
-          return Session(
-            id: json['id'].toString(),
-            date: date,
-            duration: json['duration'] as int,
-            startTime: startTime,
-            taskId: json['task_id']?.toString() ?? '',
-          );
-        }).toList();
+        return (sessionsData as List).map((json) => _sessionFromJson(json)).toList();
       } else {
         throw Exception('Failed to fetch sessions: ${response.statusCode}');
       }
     } catch (e) {
+      print('Error in fetchAllSessions: $e');
       throw Exception('Error fetching sessions: $e');
     }
   }
 
-  Future<List<Session>> fetchSessionsByDate(String date) async {
+  /// Fetch sessions for a specific date from /session/schedule/:date
+  Future<List<Session>> fetchSessionsByDate(DateTime date) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/read/date/$date'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      );
+      final formattedDate =
+          "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+      final url = Uri.parse('$baseUrl/schedule/$formattedDate');
+      print('📡 Sending GET request to: $url');
+
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+      });
+
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final sessionsData = data['session'] as List;
+        final sessionsData = data['data'];
+        if (sessionsData == null) {
+          print('Warning: data["data"] is null');
+          return [];
+        }
 
-        return sessionsData.map((json) {
-          String startTime = json['start_time']?.toString() ?? '00:00:00';
-
-          return Session(
-            id: json['id'].toString(),
-            date: date,
-            duration: json['duration'] as int,
-            startTime: startTime,
-            taskId: json['task_id']?.toString() ?? '',
-          );
-        }).toList();
+        return (sessionsData as List).map((json) => _sessionFromJson(json)).toList();
       } else {
+        print('⚠️ No sessions found for date: $formattedDate');
         return [];
       }
     } catch (e) {
+      print('Error in fetchSessionsByDate: $e');
       throw Exception('Error fetching sessions: $e');
     }
   }
 
-  Future<List<dynamic>> fetchSessionsForDay(DateTime date) async {
-    final formattedDate =
-        "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
-    final url = Uri.parse('https:/stma-back.onrender.com/api/day/read/day_sessions/$formattedDate');
-
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['schedule']; // This is a list of session maps
-    } else {
-      return [];
-    }
+  /// Helper to parse a session from JSON
+  Session _sessionFromJson(dynamic json) {
+    final startTime = json['start_time']?.toString() ?? '00:00:00';
+    return Session(
+      id: json['id'].toString(),
+      date: json['date'].toString(),
+      duration: json['duration'] is int
+          ? json['duration'] as int
+          : int.tryParse(json['duration'].toString()) ?? 0,
+      startTime: startTime,
+      taskId: json['task_id']?.toString() ?? '',
+    );
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 }
