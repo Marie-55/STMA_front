@@ -3,12 +3,16 @@ import 'package:http/http.dart' as http;
 import '../../models/session.dart';
 
 class SessionService {
-  static const String baseUrl = 'https://stma-back.onrender.com/api/session';
+  //static const String baseUrl = 'https://stma-back.onrender.com/api/session';    // checked the right URL
+  static const String baseUrl = 'http://127.0.0.1:5000/api/session'; // For local development
 
-  /// Fetch all sessions from the backend
-  Future<List<Session>> fetchAllSessions() async {
+
+
+  /// Works: ALready tested and working
+  /// This function fetches all sessions for a specific user.
+  Future<List<Session>> fetchAllSessions([int user_id = 1]) async {
     try {
-      final url = Uri.parse('$baseUrl/');
+      final url = Uri.parse('$baseUrl/user/$user_id');
       print('Sending GET request to: $url');
 
       final response = await http.get(url, headers: {
@@ -37,7 +41,14 @@ class SessionService {
     }
   }
 
-  /// Fetch sessions for a specific date from /session/schedule/:date
+
+
+
+
+  /// this function fetches all sessions for a specific date
+  /// It takes a DateTime object as input and returns a list of Session objects.
+  /// it works but we should consider the fetching based on the user from the backend
+  /// This function is useful for getting all sessions for a specific date.
   Future<List<Session>> fetchSessionsByDate(DateTime date) async {
     try {
       final formattedDate =
@@ -70,6 +81,8 @@ class SessionService {
       throw Exception('Error fetching sessions: $e');
     }
   }
+
+
 
   /// Helper to parse a session from JSON
   Session _sessionFromJson(dynamic json) {

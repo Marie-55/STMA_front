@@ -31,6 +31,28 @@ class _AddFixedSessionState extends State<AddFixedSession> {
     }
   }
 
+  Future<bool> createFixedSession(Map<String, dynamic> data) async {
+    try {
+      //final url = 'https://stma-back.onrender.com/api/fixedSession/create';
+      final url = 'http://127.0.0.1:5000/api/fixedSession/create';
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Created fixed session");
+        return true;
+      } else {
+        print("Failed to create fixed session: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print('Error creating fixed session: $e');
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -187,40 +209,26 @@ class _AddFixedSessionState extends State<AddFixedSession> {
                   final day = _selectedDays.isNotEmpty ? days.indexOf(_selectedDays.first) : null;
 
                   if (title.isEmpty || startTime == null || day == null) {
-                    
                     return;
                   }
 
-                  // Prepare data
                   final data = {
                     "title": title,
                     "day_index": day,
-                    "duration": double.parse(duration.split(' ')[0]) / 60, // Converts "30 min" to 0.5
+                    "duration": double.parse(duration.split(' ')[0]) / 60,
                     "start_time": startTime,
-                    "user_id": 1, // Uncomment and set actual user ID if needed
+                    "user_id": 1,
                   };
 
-                  try {
-                    final response = await http.post(
-                      Uri.parse('https://stma-back.onrender.com/api/fixedSession/create'),
-                      headers: {'Content-Type': 'application/json'},
-                      body: jsonEncode(data),
-                    );
+                  
+                  final success = await createFixedSession(data);
 
-                    if (response.statusCode == 200 || response.statusCode == 201) {
-                      if (mounted) {
-                        print("created fixed session");
-                        Navigator.pop(context, true); // Only pop if widget is still in tree
-                      }
+                  if (mounted) {
+                    if (success) {
+                      Navigator.pop(context, true);
                     } else {
-                      if (mounted) {
-                       print("failed fixed session");
-                      }
-                    }
-                  } catch (e) {
-                    if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
+                        SnackBar(content: Text('Failed to create fixed session')),
                       );
                     }
                   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/models/fixedsession.dart';
 import 'package:frontend/models/task.dart';
 import 'package:frontend/services/task_service.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +23,7 @@ class WeeklyScheduleGrid extends StatefulWidget {
 }
 
 class _WeeklyScheduleGridState extends State<WeeklyScheduleGrid> {
-  late Future<Map<String, List<List<Session>>>> _weeklyAllSessionsFuture;
+  late Future<Map<String, dynamic>> _weeklyAllSessionsFuture;
 
   @override
   void initState() {
@@ -38,25 +39,7 @@ class _WeeklyScheduleGridState extends State<WeeklyScheduleGrid> {
     return List.generate(7, (index) => startOfWeek.add(Duration(days: index)));
   }
 
-  Future<List<List<Session>>> fetchWeeklyFixedSessions() async {
-    final url = Uri.parse('https://stma-back.onrender.com/api/fixedSession/user/1/week');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data['success'] == true && data['data'] != null) {
-        // Ensure we always return 7 lists (one per day)
-        final raw = data['data'] as List;
-        List<List<Session>> result = List.generate(7, (i) => []);
-        for (int i = 0; i < raw.length && i < 7; i++) {
-          result[i] = (raw[i] as List).map((json) => Session.fromJson(json)).toList();
-        }
-        return result;
-      }
-    }
-    throw Exception('Failed to fetch weekly fixed sessions');
-  }
-
+ 
   Future<List<List<Session>>> fetchWeeklySessions() async {
     List<List<Session>> allWeekSessions = [];
     List<DateTime> weekDates = getCurrentWeekDates();
@@ -64,10 +47,10 @@ class _WeeklyScheduleGridState extends State<WeeklyScheduleGrid> {
 
     for (final date in weekDates) {
       String formattedDate = DateFormat('yyyy-MM-dd').format(date);
-      print('\nFetching sessions for date: $formattedDate');
+      print('\n Grid: Fetching sessions for date: $formattedDate');
 
       final rawSessions = await sessionService.fetchSessionsByDate(date);
-      print('Raw sessions received: ${jsonEncode(rawSessions)}');
+      print('Grid: Raw sessions received: ${jsonEncode(rawSessions)}');
 
       final filtered = rawSessions.where((session) {
         final sessionDateStr = session.date.toString();
@@ -75,22 +58,30 @@ class _WeeklyScheduleGridState extends State<WeeklyScheduleGrid> {
           DateTime sessionDate = DateFormat("yyyy-MM-dd").parse(sessionDateStr);
           return sessionDate.year == date.year && sessionDate.month == date.month && sessionDate.day == date.day;
         } catch (e) {
-          print("Date parsing failed for session: $session");
+          print("Grid: Date parsing failed for session: $session");
           return false;
         }
       }).toList();
 
       allWeekSessions.add(filtered);
-      print('Finished processing ${filtered.length} valid session(s) for that day.');
+      print('Grid: Finished processing ${filtered.length} valid session(s) for that day.');
     }
 
-    print('\nFinished fetching sessions for all days.');
+    print('\n Grid: Finished fetching sessions for all days.');
     return allWeekSessions;
   }
 
-  Future<Map<String, List<List<Session>>>> fetchWeeklyAllSessions() async {
+
+Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) async {
+  // This simply delegates to your model's fetchWeeklyFixedSessions
+  userId= 1; // Hardcoded user_id for testing
+  print('Grid : Fetching weekly fixed sessions for user ID: $userId');
+  return await fetchWeeklyFixedSessions(userId);
+}
+
+  Future<Map<String, dynamic>> fetchWeeklyAllSessions() async {
     final weeklySessions = await fetchWeeklySessions();
-    final weeklyFixedSessions = await fetchWeeklyFixedSessions();
+    final weeklyFixedSessions = await fetchWeeklyFixedSessionsForUser(1); // Hardcoded user_id for testing
     return {
       'sessions': weeklySessions,
       'fixed': weeklyFixedSessions,
@@ -110,7 +101,7 @@ class _WeeklyScheduleGridState extends State<WeeklyScheduleGrid> {
     final dayLabelWidth = screenWidth * 0.08;
     final dayLabelHeight = timeCellHeight * 0.9;
 
-    return FutureBuilder<Map<String, List<List<Session>>>>(
+    return FutureBuilder<Map<String, dynamic>>(
       future: _weeklyAllSessionsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
