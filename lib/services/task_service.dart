@@ -6,8 +6,93 @@ class TaskService {
   //static const String baseUrl = 'https://stma-back.onrender.com/api/tasks';
   static const String baseUrl = 'http://127.0.0.1:5000/api/tasks';
 
+  Future<List<Map<String, dynamic>>> fetchAllTasks() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/user/1'),
+        headers: {'Content-Type': 'application/json'},
+      );
 
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print(data);
+        final tasksData = data['data'] as List;
+        // print(tasksData);
+        return tasksData.map((json) {
+          return {
+            'id': json['id']?.toString() ?? '',
+            'title': json['title']?.toString() ?? '',
+            'category': json['category']?.toString() ?? '',
+            'deadline': json['deadline']?.toString() ??
+                DateTime.now().toIso8601String(),
+            'duration': json['duration']?.toString() ?? '60',
+            'priority': json['priority']?.toString() ?? 'Medium',
+            'is_scheduled': json['is_scheduled'] ?? false,
+            'is_synched': json['is_synched'] ?? false,
+            'to_reschedule': json['to_reschedule'] ?? false,
+            'user': json['user']?.toString() ?? '',
+            'status': json['status']?.toString() ?? 'To-do',
+          };
+        }).toList();
+      } else {
+        throw Exception('Failed to fetch tasks: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching tasks: $e');
+    }
+  }
 
+  Future<List<Map<String, dynamic>>> fetchTasksToReschedule() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/read/to_reschedule'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['tasks']);
+      } else {
+        throw Exception(
+            'Failed to fetch tasks to reschedule: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching tasks to reschedule: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> addTask({
+    required String title,
+    required String category,
+    required String deadline,
+    required String duration,
+    required String priority,
+    bool isScheduled = false,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/write/add'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'title': title,
+          'category': category,
+          'deadline': deadline,
+          'duration': duration,
+          'priority': priority,
+          // 'is_scheduled': isScheduled,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Task added successfully: ${response.body}');
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to add task');
+      }
+    } catch (e) {
+      throw Exception('Error adding task: $e');
+    }
+  }
 
 // Work : ALready tested and working
 /// Function to create a new task for a specific user 
@@ -171,6 +256,7 @@ class TaskService {
       throw Exception('Error searching tasks: $e');
     }
   }
+
 
 
 // the route is not implemented in the backend, so this function will not work until the backend is updated

@@ -4,8 +4,6 @@ import 'package:frontend/views/screens/weekly_timetable.dart';
 import '../../bloc/navigation/navigation_bloc.dart';
 import '../../bloc/navigation/navigation_event.dart';
 import '../../bloc/session/session_bloc.dart';
-import '../../bloc/session/session_event.dart';
-import '../../bloc/session/session_state.dart';
 import '../../bloc/date/date_bloc.dart';
 import '../../services/session_service.dart';
 import '../widgets/add_task_modal.dart';
@@ -24,6 +22,7 @@ class MainLayout extends StatelessWidget {
   MainLayout({super.key});
 
   final List<Widget> _screens = [
+
     const HomeScreen(),        // index 0 - Calendar
     const TasksScreen(),       // index 1 - Tasks
     const NotificationScreen(),// index 2 - Notifications
@@ -33,8 +32,9 @@ class MainLayout extends StatelessWidget {
     const LoginScreen(),       // index 5
     const WelcomeScreen()
 
-    //const NotesScreen(),
-    //const ProfileScreen(),
+    const LoginScreen(), // index 5
+    const SignupScreen(), // index 4 - Profile
+    // const NotesScreen(),
   ];
 
   @override

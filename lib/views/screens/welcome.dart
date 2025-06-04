@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/bloc/auth/auth_bloc.dart';
+import 'package:frontend/bloc/auth/auth_event.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({Key? key}) : super(key: key);
+  const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +68,7 @@ class WelcomeScreen extends StatelessWidget {
                         const Spacer(),
                         ElevatedButton(
                           onPressed: () {
-                            // Navigate to the next screen
+                            context.read<AuthBloc>().add(LoginSuccessEvent());
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(

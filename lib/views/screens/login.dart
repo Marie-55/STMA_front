@@ -5,7 +5,7 @@ import 'package:frontend/bloc/auth/auth_event.dart';
 import 'package:frontend/bloc/auth/auth_state.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -32,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration(
-              color: Color(0xECECEC),
+              color: Color(0x00ececec),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Padding(
