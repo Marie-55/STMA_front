@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     
     try {
-      print('Fetching task details for ID: $taskId'); // Debug print
+      print('1.... Fetching task details for ID: $taskId'); // Debug print
       final taskDetails = await _taskService.fetchTaskById(taskId);
       _taskCache[taskId] = taskDetails;
       return taskDetails;

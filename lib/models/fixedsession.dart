@@ -38,7 +38,7 @@ class FixedSession {
 }
 
 Future<List<List<FixedSession>>> fetchWeeklyFixedSessions(int user_id) async {
-  final url = Uri.parse('http://127.0.0.1:5000/api/fixedSession/user/$user_id');
+  final url = Uri.parse('https://stma-back.onrender.com/api/fixedSession/user/$user_id');
   final response = await http.get(url);
 
   if (response.statusCode == 200) {

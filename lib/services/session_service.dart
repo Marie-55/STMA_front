@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import '../../models/session.dart';
 
 class SessionService {
-  //static const String baseUrl = 'https://stma-back.onrender.com/api/session';    // checked the right URL
-  static const String baseUrl = 'http://127.0.0.1:5000/api/session'; // For local development
+  static const String baseUrl = 'https://stma-back.onrender.com/api/session';    // checked the right URL
+  //static const String baseUrl = 'http://127.0.0.1:5000/api/session'; // For local development
 
 
 

@@ -33,8 +33,8 @@ class _AddFixedSessionState extends State<AddFixedSession> {
 
   Future<bool> createFixedSession(Map<String, dynamic> data) async {
     try {
-      //final url = 'https://stma-back.onrender.com/api/fixedSession/create';
-      final url = 'http://127.0.0.1:5000/api/fixedSession/create';
+      final url = 'https://stma-back.onrender.com/api/fixedSession/create';
+      //final url = 'http://127.0.0.1:5000/api/fixedSession/create';
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},

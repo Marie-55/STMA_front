@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class TaskService {
-  //static const String baseUrl = 'https://stma-back.onrender.com/api/tasks';
-  static const String baseUrl = 'http://127.0.0.1:5000/api/tasks';
+  static const String baseUrl = 'https://stma-back.onrender.com/api/tasks';
+  //static const String baseUrl = 'http://127.0.0.1:5000/api/tasks';
 
 
 
@@ -195,14 +195,16 @@ class TaskService {
 // not working ( tested, the problem is with the taskid, in the firebase it is a string, but here it is an int )
  Future<Map<String, dynamic>> fetchTaskById(String taskId) async {
   try {
+    final int id = int.parse(taskId);
+    print('Fetching task with ID: $id'); // Debugging line to check the ID
     final response = await http.get(
-      Uri.parse('$baseUrl/$taskId'),  // Use the updated route to fetch task by ID
+      Uri.parse('$baseUrl/$id'),  // Use the updated route to fetch task by ID
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final taskData = data['task'];
+      final taskData = data['data'];
 
       if (taskData != null) {
         return {
@@ -230,17 +232,25 @@ class TaskService {
 }
 
 
+
+
+
+
+
+
 // not woorking, depends on fetchTaskById
 Future<String> fetchTaskTitle(String taskId) async {
   try {
+    final int id = int.parse(taskId);
+    print('Fetching task with ID: $id'); 
     final response = await http.get(
-      Uri.parse('$baseUrl/$taskId'),  // Use the appropriate API endpoint
+      Uri.parse('$baseUrl/$id'),  // Use the appropriate API endpoint
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final taskData = data['task'];
+      final taskData = data['data'];
 
       if (taskData != null) {
         return taskData['title'].toString();  // Return the task's title
