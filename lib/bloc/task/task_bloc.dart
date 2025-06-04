@@ -79,11 +79,9 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
       // Format the date as yyyy-MM-dd for the backend
       final formattedDeadline =
           event.task.deadline.toIso8601String().split('.').first;
-      //  dedicace l aymen, yasser and bel9a
-
       print('TaskBloc: Formatted deadline: $formattedDeadline');
 
-      await _taskService.createTask(
+      final newTask = await _taskService.createTask(
         title: event.task.title,
         category: event.task.category,
         deadline: formattedDeadline,
@@ -93,12 +91,14 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
       );
       print('TaskBloc: Task created successfully in backend!');
 
-      // Reload tasks after creating a new one
-      print('TaskBloc: Reloading task list...');
-      final tasks = await _taskService.fetchAllTasks();
+      // Convert the new task to Task model and add it to the current state
+      final taskModel = Task.fromJson(newTask);
+      final updatedTasks = List<Task>.from(state.tasks)..add(taskModel);
+
+      // Update the state with the new task list
       emit(state.copyWith(
         isLoading: false,
-        tasks: tasks.map((task) => Task.fromJson(task)).toList(),
+        tasks: updatedTasks,
       ));
       print('TaskBloc: Task list updated successfully!');
     } catch (e) {

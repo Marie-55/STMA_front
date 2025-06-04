@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:frontend/views/screens/weekly_timetable.dart';
-import '../../bloc/navigation/navigation_bloc.dart';
-import '../../bloc/navigation/navigation_event.dart';
-import '../../bloc/session/session_bloc.dart';
-import '../../bloc/date/date_bloc.dart';
-import '../../services/session_service.dart';
-import '../widgets/add_task_modal.dart';
 import '../widgets/custom_bottom_nav.dart';
+import 'package:frontend/bloc/navigation/navigation_bloc.dart';
+import 'package:frontend/bloc/navigation/navigation_event.dart';
+import 'package:frontend/bloc/session/session_bloc.dart';
+import 'package:frontend/bloc/date/date_bloc.dart';
+import 'package:frontend/services/session_service.dart';
+import 'package:frontend/services/task_service.dart';
+import 'package:frontend/bloc/task/task_bloc.dart';
+import 'package:frontend/bloc/task/task_event.dart';
+import '../widgets/add_task_modal.dart';
 import 'home.dart';
 import 'tasks.dart';
-import 'notification_screen.dart';
+import 'profile_screen.dart';
+//import 'notification_screen.dart';
 import 'welcome.dart';
 import 'signup.dart';
 import 'login.dart';
-import 'profile_screen.dart';
 //import 'notes_screen.dart';
 //import 'profile_screen.dart';
 
@@ -22,10 +24,10 @@ class MainLayout extends StatelessWidget {
   MainLayout({super.key});
 
   final List<Widget> _screens = [
-    const HomeScreen(), // index 0 - Calendar
-    const TasksScreen(), // index 1 - Tasks
-    const NotificationScreen(), // index 2 - Notifications
-    const WeeklyTimetable(), // index 3 - Notes
+    const HomeScreen(),
+    const TasksScreen(),
+    Container(), // Placeholder for FAB
+    Container(), // Notes screen placeholder
     const ProfileScreen(),
     const SignupScreen(), // index 4 - Profile
     const LoginScreen(), // index 5
@@ -43,6 +45,10 @@ class MainLayout extends StatelessWidget {
         BlocProvider(create: (context) => NavigationBloc()),
         BlocProvider(create: (context) => SessionBloc(SessionService())),
         BlocProvider(create: (context) => DateBloc()),
+        BlocProvider(
+          create: (context) => TaskBloc(TaskService())..add(LoadTasks()),
+          lazy: false,
+        ),
       ],
       child: BlocBuilder<NavigationBloc, NavigationState>(
         builder: (context, state) {

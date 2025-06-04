@@ -56,7 +56,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               child: ClipOval(
                 child: Image.asset(
-                  "assets/images/profile_picture.png",
+                  "assets/images/Vector.png",
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return const Center(

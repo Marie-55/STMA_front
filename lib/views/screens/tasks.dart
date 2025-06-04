@@ -57,210 +57,206 @@ class _TasksScreenState extends State<TasksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => TaskBloc(TaskService())..add(LoadTasks()),
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F6F7),
+      appBar: AppBar(
         backgroundColor: const Color(0xFFF2F6F7),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFF2F6F7),
-          centerTitle: true,
-          elevation: 0,
-          title: const Padding(
-            padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-            child: Text(
-              "Your Tasks",
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        centerTitle: true,
+        elevation: 0,
+        title: const Padding(
+          padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+          child: Text(
+            "Your Tasks",
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 20, 10, 0),
+            child: IconButton(
+              icon: const Icon(Icons.notifications, color: Colors.black),
+              onPressed: () {
+                // Navigate to the notification screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => NotificationScreen()),
+                );
+              },
             ),
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 20, 10, 0),
-              child: IconButton(
-                icon: const Icon(Icons.notifications, color: Colors.black),
-                onPressed: () {
-                  // Navigate to the notification screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => NotificationScreen()),
-                  );
-                },
+        ],
+      ),
+      body: BlocBuilder<TaskBloc, TaskState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.error != null) {
+            return Center(
+              child: Text(
+                state.error!,
+                style: const TextStyle(color: Colors.red),
               ),
-            ),
-          ],
-        ),
-        body: BlocBuilder<TaskBloc, TaskState>(
-          builder: (context, state) {
-            if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+            );
+          }
 
-            if (state.error != null) {
-              return Center(
-                child: Text(
-                  state.error!,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              );
-            }
+          final allTasks = state.tasks;
 
-            final allTasks = state.tasks;
-
-            final displayedTasks = allTasks.where((task) {
-              // Apply search filter
-              if (_searchQuery.isNotEmpty) {
-                final query = _searchQuery.toLowerCase();
-                if (!task.title.toLowerCase().contains(query) &&
-                    !task.category.toLowerCase().contains(query)) {
-                  return false;
-                }
-              }
-              // Apply reschedule filter if active
-              if (_showRescheduledOnly && !task.toReschedule) {
+          final displayedTasks = allTasks.where((task) {
+            // Apply search filter
+            if (_searchQuery.isNotEmpty) {
+              final query = _searchQuery.toLowerCase();
+              if (!task.title.toLowerCase().contains(query) &&
+                  !task.category.toLowerCase().contains(query)) {
                 return false;
               }
-              return true;
-            }).toList();
+            }
+            // Apply reschedule filter if active
+            if (_showRescheduledOnly && !task.toReschedule) {
+              return false;
+            }
+            return true;
+          }).toList();
 
-            return Column(
-              children: [
-                const SizedBox(height: 20),
+          return Column(
+            children: [
+              const SizedBox(height: 20),
 
-                // Search Bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 0,
-                          blurRadius: 5,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.search, color: Colors.grey),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              decoration: InputDecoration(
-                                hintText: 'Search tasks...',
-                                hintStyle: TextStyle(color: Colors.grey[400]),
-                                border: InputBorder.none,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _searchQuery = value;
-                                });
-                              },
-                            ),
-                          ),
-                          if (_searchQuery.isNotEmpty)
-                            IconButton(
-                              icon: const Icon(Icons.clear, color: Colors.grey),
-                              onPressed: () {
-                                setState(() {
-                                  _searchController.clear();
-                                  _searchQuery = '';
-                                });
-                              },
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Filter buttons
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      _buildFilterButton(
-                        'All Tasks',
-                        !_showRescheduledOnly,
-                        () => setState(() => _showRescheduledOnly = false),
-                      ),
-                      const SizedBox(width: 10),
-                      _buildFilterButton(
-                        'To Be Rescheduled',
-                        _showRescheduledOnly,
-                        () => setState(() => _showRescheduledOnly = true),
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 0,
+                        blurRadius: 5,
+                        offset: const Offset(0, 1),
                       ),
                     ],
                   ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Task List or Empty State
-                Expanded(
-                  child: displayedTasks.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.search_off,
-                                  size: 48, color: Colors.grey),
-                              const SizedBox(height: 16),
-                              Text(
-                                _searchQuery.isNotEmpty
-                                    ? 'No tasks found for "$_searchQuery"'
-                                    : 'No tasks found',
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                            ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: Colors.grey),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Search tasks...',
+                              hintStyle: TextStyle(color: Colors.grey[400]),
+                              border: InputBorder.none,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: displayedTasks.length,
-                          itemBuilder: (context, index) {
-                            final task = displayedTasks[index];
-                            // print(task)
-                            return GestureDetector(
-                              child: TaskCard(
-                                id: task.id,
-                                toReschedule: task.toReschedule,
-                                title: task.title,
-                                category: task.category,
-                                timeRange: '${task.duration} minutes',
-                                date: DateFormat('MMM dd, yyyy')
-                                    .format(task.deadline),
-                                status: task.status,
-                                priority: task.priority,
-                                duration: '${task.duration} minutes',
-                              ),
-                            );
-                          },
                         ),
+                        if (_searchQuery.isNotEmpty)
+                          IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey),
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                                _searchQuery = '';
+                              });
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            );
-          },
-        ),
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        //     Navigator.push(
-        //       context,
-        //       MaterialPageRoute(builder: (_) => const AddTaskScreen()),
-        //     );
-        //   },
-        //   backgroundColor: const Color(0xFF5E32E0),
-        //   child: const Icon(Icons.add, color: Colors.white),
-        // ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Filter buttons
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    _buildFilterButton(
+                      'All Tasks',
+                      !_showRescheduledOnly,
+                      () => setState(() => _showRescheduledOnly = false),
+                    ),
+                    const SizedBox(width: 10),
+                    _buildFilterButton(
+                      'To Be Rescheduled',
+                      _showRescheduledOnly,
+                      () => setState(() => _showRescheduledOnly = true),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Task List or Empty State
+              Expanded(
+                child: displayedTasks.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.search_off,
+                                size: 48, color: Colors.grey),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchQuery.isNotEmpty
+                                  ? 'No tasks found for "$_searchQuery"'
+                                  : 'No tasks found',
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: displayedTasks.length,
+                        itemBuilder: (context, index) {
+                          final task = displayedTasks[index];
+                          // print(task)
+                          return GestureDetector(
+                            child: TaskCard(
+                              id: task.id,
+                              toReschedule: task.toReschedule,
+                              title: task.title,
+                              category: task.category,
+                              timeRange: '${task.duration} minutes',
+                              date: DateFormat('MMM dd, yyyy')
+                                  .format(task.deadline),
+                              status: task.status,
+                              priority: task.priority,
+                              duration: '${task.duration} minutes',
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(builder: (_) => const AddTaskScreen()),
+      //     );
+      //   },
+      //   backgroundColor: const Color(0xFF5E32E0),
+      //   child: const Icon(Icons.add, color: Colors.white),
+      // ),
     );
   }
 

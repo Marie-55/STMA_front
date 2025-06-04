@@ -8,7 +8,7 @@ import '../../bloc/date/date_bloc.dart';
 import '../../models/session.dart';
 import '../widgets/task_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../screens/notification_screen.dart';
+//import '../screens/notification_screen.dart';
 import '../../bloc/navigation/navigation_bloc.dart';
 import '../../bloc/navigation/navigation_event.dart';
 import 'package:http/http.dart' as http;
