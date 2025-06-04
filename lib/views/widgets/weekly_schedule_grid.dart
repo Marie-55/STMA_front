@@ -39,7 +39,6 @@ class _WeeklyScheduleGridState extends State<WeeklyScheduleGrid> {
     return List.generate(7, (index) => startOfWeek.add(Duration(days: index)));
   }
 
- 
   Future<List<List<Session>>> fetchWeeklySessions() async {
     List<List<Session>> allWeekSessions = [];
     List<DateTime> weekDates = getCurrentWeekDates();
@@ -49,14 +48,17 @@ class _WeeklyScheduleGridState extends State<WeeklyScheduleGrid> {
       String formattedDate = DateFormat('yyyy-MM-dd').format(date);
       print('\n Grid: Fetching sessions for date: $formattedDate');
 
-      final rawSessions = await sessionService.fetchSessionsByDate(date);
+      final rawSessions =
+          await sessionService.fetchSessionsByDate(date as String);
       print('Grid: Raw sessions received: ${jsonEncode(rawSessions)}');
 
       final filtered = rawSessions.where((session) {
         final sessionDateStr = session.date.toString();
         try {
           DateTime sessionDate = DateFormat("yyyy-MM-dd").parse(sessionDateStr);
-          return sessionDate.year == date.year && sessionDate.month == date.month && sessionDate.day == date.day;
+          return sessionDate.year == date.year &&
+              sessionDate.month == date.month &&
+              sessionDate.day == date.day;
         } catch (e) {
           print("Grid: Date parsing failed for session: $session");
           return false;
@@ -64,24 +66,26 @@ class _WeeklyScheduleGridState extends State<WeeklyScheduleGrid> {
       }).toList();
 
       allWeekSessions.add(filtered);
-      print('Grid: Finished processing ${filtered.length} valid session(s) for that day.');
+      print(
+          'Grid: Finished processing ${filtered.length} valid session(s) for that day.');
     }
 
     print('\n Grid: Finished fetching sessions for all days.');
     return allWeekSessions;
   }
 
-
-Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) async {
-  // This simply delegates to your model's fetchWeeklyFixedSessions
-  userId= 1; // Hardcoded user_id for testing
-  print('Grid : Fetching weekly fixed sessions for user ID: $userId');
-  return await fetchWeeklyFixedSessions(userId);
-}
+  Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(
+      int userId) async {
+    // This simply delegates to your model's fetchWeeklyFixedSessions
+    userId = 1; // Hardcoded user_id for testing
+    print('Grid : Fetching weekly fixed sessions for user ID: $userId');
+    return await fetchWeeklyFixedSessions(userId);
+  }
 
   Future<Map<String, dynamic>> fetchWeeklyAllSessions() async {
     final weeklySessions = await fetchWeeklySessions();
-    final weeklyFixedSessions = await fetchWeeklyFixedSessionsForUser(1); // Hardcoded user_id for testing
+    final weeklyFixedSessions = await fetchWeeklyFixedSessionsForUser(
+        1); // Hardcoded user_id for testing
     return {
       'sessions': weeklySessions,
       'fixed': weeklyFixedSessions,
@@ -121,12 +125,14 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
                   children: [
                     SizedBox(height: timeCellHeight),
                     ...weekDates.map((date) {
-                      final dayLetter = DateFormat.E().format(date).substring(0, 1);
+                      final dayLetter =
+                          DateFormat.E().format(date).substring(0, 1);
                       final dayNum = date.day;
                       return Container(
                         width: dayLabelWidth,
                         height: dayLabelHeight,
-                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFBCAEF2),
                           borderRadius: BorderRadius.circular(15),
@@ -152,7 +158,8 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
                     Row(
                       children: List.generate(totalHours, (index) {
                         final hour = widget.startHour + index;
-                        final label = DateFormat.j().format(DateTime(0, 0, 0, hour));
+                        final label =
+                            DateFormat.j().format(DateTime(0, 0, 0, hour));
                         return Container(
                           width: timeCellWidth,
                           height: timeCellHeight,
@@ -179,8 +186,10 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
                                   height: timeCellHeight,
                                   decoration: const BoxDecoration(
                                     border: Border(
-                                      right: BorderSide(color: Color(0xFFE5E5E5), width: 1),
-                                      bottom: BorderSide(color: Color(0xFFE5E5E5), width: 1),
+                                      right: BorderSide(
+                                          color: Color(0xFFE5E5E5), width: 1),
+                                      bottom: BorderSide(
+                                          color: Color(0xFFE5E5E5), width: 1),
                                     ),
                                     color: Color(0xFFF8F9FB),
                                   ),
@@ -191,20 +200,25 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
                         ),
                         ...weeklySessions.expand((sessionsForDay) {
                           return sessionsForDay.map((session) {
-                            DateTime sessionDate = DateFormat("yyyy-MM-dd").parse(session.date);
+                            DateTime sessionDate =
+                                DateFormat("yyyy-MM-dd").parse(session.date);
                             int dayIndex = weekDates.indexWhere((d) =>
                                 d.year == sessionDate.year &&
                                 d.month == sessionDate.month &&
                                 d.day == sessionDate.day);
 
                             TimeOfDay startTime = TimeOfDay(
-                                hour: int.parse(session.startTime.split(':')[0]),
-                                minute: int.parse(session.startTime.split(':')[1]));
+                                hour:
+                                    int.parse(session.startTime.split(':')[0]),
+                                minute:
+                                    int.parse(session.startTime.split(':')[1]));
 
                             int startOffset = startTime.hour - widget.startHour;
                             int duration = session.duration;
 
-                            if (dayIndex < 0 || startOffset < 0 || startOffset >= totalHours) {
+                            if (dayIndex < 0 ||
+                                startOffset < 0 ||
+                                startOffset >= totalHours) {
                               return const SizedBox.shrink();
                             }
 
@@ -216,7 +230,8 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
                               child: FutureBuilder<String>(
                                 future: fetchTaskTitle(session.taskId),
                                 builder: (context, taskSnapshot) {
-                                  final taskTitle = taskSnapshot.data ?? "No task found";
+                                  final taskTitle =
+                                      taskSnapshot.data ?? "No task found";
                                   return Container(
                                     margin: const EdgeInsets.all(6),
                                     padding: const EdgeInsets.all(6),
@@ -225,8 +240,10 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
                                       borderRadius: BorderRadius.circular(13),
                                     ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Text(
                                           taskTitle,
@@ -258,20 +275,25 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
                         }).toList(),
                         ...weeklyFixedSessions.expand((sessionsForDay) {
                           return sessionsForDay.map((session) {
-                            DateTime sessionDate = DateFormat("yyyy-MM-dd").parse(session.date);
+                            DateTime sessionDate =
+                                DateFormat("yyyy-MM-dd").parse(session.date);
                             int dayIndex = weekDates.indexWhere((d) =>
                                 d.year == sessionDate.year &&
                                 d.month == sessionDate.month &&
                                 d.day == sessionDate.day);
 
                             TimeOfDay startTime = TimeOfDay(
-                                hour: int.parse(session.startTime.split(':')[0]),
-                                minute: int.parse(session.startTime.split(':')[1]));
+                                hour:
+                                    int.parse(session.startTime.split(':')[0]),
+                                minute:
+                                    int.parse(session.startTime.split(':')[1]));
 
                             int startOffset = startTime.hour - widget.startHour;
                             int duration = session.duration;
 
-                            if (dayIndex < 0 || startOffset < 0 || startOffset >= totalHours) {
+                            if (dayIndex < 0 ||
+                                startOffset < 0 ||
+                                startOffset >= totalHours) {
                               return const SizedBox.shrink();
                             }
 
@@ -283,18 +305,22 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
                               child: FutureBuilder<String>(
                                 future: fetchTaskTitle(session.taskId),
                                 builder: (context, taskSnapshot) {
-                                  final taskTitle = taskSnapshot.data ?? "No task found";
+                                  final taskTitle =
+                                      taskSnapshot.data ?? "No task found";
                                   return Container(
                                     margin: const EdgeInsets.all(6),
                                     padding: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
                                       color: Color(0xFF6ED2F0),
                                       borderRadius: BorderRadius.circular(13),
-                                      border: Border.all(color: Colors.blueAccent, width: 1),
+                                      border: Border.all(
+                                          color: Colors.blueAccent, width: 1),
                                     ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Text(
                                           taskTitle,
@@ -356,4 +382,3 @@ Future<List<List<FixedSession>>> fetchWeeklyFixedSessionsForUser(int userId) asy
     }
   }
 }
-

@@ -150,17 +150,17 @@
 
 
 
-import '../views/widgets/weekly_schedule_grid.dart';
-void main() async {
-  // Create an instance of your state class
-  final state = _WeeklyScheduleGridState();
+// import '../views/widgets/weekly_schedule_grid.dart';
+// void main() async {
+//   // Create an instance of your state class
+//   final state = _WeeklyScheduleGridState();
 
-  // Call the fetch function directly
-  final result = await state.fetchWeeklyAllSessions();
+//   // Call the fetch function directly
+//   final result = await state.fetchWeeklyAllSessions();
 
-  print('Weekly Sessions:');
-  print(result['sessions']);
+//   print('Weekly Sessions:');
+//   print(result['sessions']);
 
-  print('Weekly Fixed Sessions:');
-  print(result['fixed']);
-}
+//   print('Weekly Fixed Sessions:');
+//   print(result['fixed']);
+// }
