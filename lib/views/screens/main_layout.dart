@@ -15,6 +15,8 @@ import 'welcome.dart';
 import 'signup.dart';
 import 'login.dart';
 import 'profile_screen.dart';
+import 'study_session_screen.dart';
+import 'pomodoro_settings_screen.dart';
 //import 'notes_screen.dart';
 //import 'profile_screen.dart';
 
@@ -22,17 +24,17 @@ class MainLayout extends StatelessWidget {
   MainLayout({super.key});
 
   final List<Widget> _screens = [
-    const HomeScreen(), // index 0 - Calendar
-    const TasksScreen(), // index 1 - Tasks
-    const NotificationScreen(), // index 2 - Notifications
-    const WeeklyTimetable(), // index 3 - Notes
+    const HomeScreen(),        // index 0 - Calendar
+    const TasksScreen(),       // index 1 - Tasks
+    const NotificationScreen(),// index 2 - Notifications
+    const WelcomeScreen(),     // index 3 - Notes
+    const StudySessionScreen(),
+    const SignupScreen(),      // index 4 - Profile
+    const LoginScreen(),       // index 5
     const ProfileScreen(),
-    const SignupScreen(), // index 4 - Profile
-    const LoginScreen(), // index 5
-    const WelcomeScreen(),
+    const PomodoroSettingsScreen(),
+    const WeeklyTimetable(), // index 3 - Notes
 
-    const LoginScreen(), // index 5
-    const SignupScreen(), // index 4 - Profile
     // const NotesScreen(),
   ];
 
