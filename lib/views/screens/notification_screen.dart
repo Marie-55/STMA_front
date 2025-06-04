@@ -6,25 +6,28 @@ import '../../bloc/navigation/navigation_bloc.dart';
 import '../../bloc/navigation/navigation_event.dart';
 
 class NotificationScreen extends StatelessWidget {
-  const NotificationScreen({Key? key}) : super(key: key);
+  const NotificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     // Get the NavigationBloc from the main layout
-    final navigationBloc = BlocProvider.of<NavigationBloc>(context, listen: false);
-    
+    final navigationBloc =
+        BlocProvider.of<NavigationBloc>(context, listen: false);
+
     // Static notification data
     final List<Map<String, dynamic>> notifications = [
       {
         'icon': Icons.access_time,
         'title': 'Upcoming Task Reminder',
-        'content': "Hey! You've got Study for Math Quiz starting in 10 minutes.",
+        'content':
+            "Hey! You've got Study for Math Quiz starting in 10 minutes.",
         'day': '2 days ago',
       },
       {
         'icon': Icons.task_alt,
         'title': 'Task Completion Reminder',
-        'content': 'Did you finish your English essay? Mark it done to track your progress',
+        'content':
+            'Did you finish your English essay? Mark it done to track your progress',
         'day': '5 days ago',
       },
       {
@@ -42,13 +45,15 @@ class NotificationScreen extends StatelessWidget {
       {
         'icon': Icons.psychology,
         'title': 'Gentle Nudges',
-        'content': "We noticed you skipped 'Read History Chapter 3' again. Need help rescheduling?",
+        'content':
+            "We noticed you skipped 'Read History Chapter 3' again. Need help rescheduling?",
         'day': '4 days ago',
       },
       {
         'icon': Icons.emoji_events,
         'title': 'Goal Achievement',
-        'content': "oohoo! You've completed all your tasks for the day! Time to celebrate.",
+        'content':
+            "oohoo! You've completed all your tasks for the day! Time to celebrate.",
         'day': '1 week ago',
       },
     ];
@@ -90,8 +95,7 @@ class NotificationScreen extends StatelessWidget {
             },
           ),
         ),
-       
       ),
     );
   }
-} 
+}

@@ -55,21 +55,19 @@ class CustomBottomNavBar extends StatelessWidget {
               color: isSelected ? const Color(0xFF5E32E0) : Colors.grey,
               size: 22,
             ),
-            if (label != null)
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isSelected ? const Color(0xFF5E32E0) : Colors.grey,
-                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                  height: 1.0,
-                ),
-                overflow: TextOverflow.visible,
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: isSelected ? const Color(0xFF5E32E0) : Colors.grey,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                height: 1.0,
               ),
+              overflow: TextOverflow.visible,
+            ),
           ],
         ),
       ),
     );
   }
 }
-

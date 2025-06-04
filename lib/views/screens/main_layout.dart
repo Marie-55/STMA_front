@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/views/screens/weekly_timetable.dart';
 import '../../bloc/navigation/navigation_bloc.dart';
 import '../../bloc/navigation/navigation_event.dart';
 import '../../bloc/session/session_bloc.dart';
-import '../../bloc/session/session_event.dart';
-import '../../bloc/session/session_state.dart';
 import '../../bloc/date/date_bloc.dart';
 import '../../services/session_service.dart';
 import '../widgets/add_task_modal.dart';
@@ -34,9 +33,9 @@ class MainLayout extends StatelessWidget {
     const LoginScreen(),       // index 5
     const ProfileScreen(),
     const PomodoroSettingsScreen(),
+    const WeeklyTimetable(), // index 3 - Notes
 
-    //const NotesScreen(),
-    //const ProfileScreen(),
+    // const NotesScreen(),
   ];
 
   @override

@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/bloc/task/task_bloc.dart';
+import 'package:frontend/bloc/task/task_event.dart';
+import 'package:frontend/models/task.dart';
+import 'package:frontend/views/widgets/rescheduling_card.dart';
+import 'package:intl/intl.dart';
 
 import 'task_detail_modal.dart';
 
@@ -11,6 +17,10 @@ class TaskCard extends StatelessWidget {
   final String priority;
   final String? duration;
 
+  /// need to be added, loop on files and update the taskCard calls
+  final bool toReschedule;
+  final String id;
+
   const TaskCard({
     super.key,
     this.category = 'Studies',
@@ -20,6 +30,10 @@ class TaskCard extends StatelessWidget {
     this.status = 'To-do',
     this.priority = 'Important',
     this.duration,
+    this.toReschedule = false, // updates
+    required this.id,
+
+    /// updates
   });
 
   Color _getStatusColor() {
@@ -29,7 +43,8 @@ class TaskCard extends StatelessWidget {
       case 'In Progress':
         return const Color(0xFFFFF3E0); // Light orange background
       default:
-        return const Color(0xFFE3F2FD); // Light blue background (for To-do and any other status)
+        return const Color(
+            0xFFE3F2FD); // Light blue background (for To-do and any other status)
     }
   }
 
@@ -40,7 +55,8 @@ class TaskCard extends StatelessWidget {
       case 'In Progress':
         return const Color(0xFFF57C00); // Darker orange text
       default:
-        return const Color(0xFF1976D2); // Darker blue text (for To-do and any other status)
+        return const Color(
+            0xFF1976D2); // Darker blue text (for To-do and any other status)
     }
   }
 
@@ -76,31 +92,54 @@ class TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) {
-            return DraggableScrollableSheet(
-              initialChildSize: 0.4,
-              minChildSize: 0.3,
-              maxChildSize: 0.95,
-              expand: false,
-              builder: (context, scrollController) {
-                return TaskDetailModal(
-                  title: title,
-                  category: category,
-                  timeRange: timeRange,
-                  date: date,
-                  status: status,
-                  priority: priority,
-                  duration: duration ?? "3 hours",
-                  scrollController: scrollController,
-                );
-              },
-            );
-          },
-        );
+        if (toReschedule == 5) {
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder: (context) {
+              return ReschedulingCard(
+                title: title,
+                category: category,
+                missedDate: date,
+                taskId: int.parse(id),
+                onReschedule: () {
+                  Navigator.of(context).pop();
+                  context.read<TaskBloc>().add(
+                      LoadTasks()); // dunno what is this problem with the read
+                },
+                onTaskDeleted: () {
+                  context.read<TaskBloc>().add(LoadTasks());
+                },
+              );
+            },
+          );
+        } else {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) {
+              return DraggableScrollableSheet(
+                initialChildSize: 0.4,
+                minChildSize: 0.3,
+                maxChildSize: 0.95,
+                expand: false,
+                builder: (context, scrollController) {
+                  return TaskDetailModal(
+                    title: title,
+                    category: category,
+                    timeRange: timeRange,
+                    date: date,
+                    status: status,
+                    priority: priority,
+                    duration: duration ?? "3 hours",
+                    scrollController: scrollController,
+                  );
+                },
+              );
+            },
+          );
+        }
       },
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -121,7 +160,8 @@ class TaskCard extends StatelessWidget {
                     style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: _getStatusColor(),
                       borderRadius: BorderRadius.circular(20),

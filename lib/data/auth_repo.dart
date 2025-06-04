@@ -13,7 +13,7 @@ class AuthRepository {
     final response = await http.post(
       Uri.parse('$baseUrl/user/login'),
       headers: {
-        'Content-Type': 'application/json',
+        // 'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
       body: {'email': email, 'password': password},

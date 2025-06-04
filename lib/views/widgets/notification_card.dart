@@ -8,13 +8,13 @@ class NotificationCard extends StatelessWidget {
   final bool isRead;
 
   const NotificationCard({
-    Key? key,
+    super.key,
     this.icon = Icons.notifications_outlined,
     this.title = 'Notification',
     this.content = 'No content available',
     this.day = 'Just now',
     this.isRead = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -97,4 +97,4 @@ class NotificationCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

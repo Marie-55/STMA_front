@@ -4,6 +4,8 @@ import 'package:frontend/bloc/auth/auth_bloc.dart';
 import 'package:frontend/data/auth_repo.dart';
 import 'package:frontend/bloc/navigation/navigation_bloc.dart';
 import 'package:frontend/bloc/pomodoro/pomodoro_bloc.dart';
+
+import 'package:frontend/views/widgets/splashRouter.dart';
 import 'views/screens/main_layout.dart';
 
 void main() {
@@ -36,7 +38,7 @@ class MyApp extends StatelessWidget {
                 AuthRepository(baseUrl: "https://stma-back.onrender.com/api")),
           ),
         ],
-        child: MainLayout(),
+        child: SplashRouter(),
       ),
     );
   }

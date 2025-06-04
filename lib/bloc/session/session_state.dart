@@ -28,5 +28,7 @@ class SessionState {
   }
 
   // Get sessions for the selected date
-  List<Session> get sessions => allSessions.where((session) => session.date == selectedDate).toList();
+  List<Session> get sessions =>
+      allSessions.where((session) => session.date == selectedDate).toList();
+  // List<Session> get sessions => allSessions.where((session) => true).toList();
 }
