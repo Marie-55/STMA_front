@@ -3,18 +3,63 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class TaskService {
-  static const String baseUrl = 'https:/stma-back.onrender.com/api/tasks';
+  //static const String baseUrl = 'https://stma-back.onrender.com/api/tasks';
+  static const String baseUrl = 'http://127.0.0.1:5000/api/tasks';
 
+
+
+
+// Work : ALready tested and working
+/// Function to create a new task for a specific user 
+  Future<Map<String, dynamic>> createTask({
+    required String title,
+    required String category,
+    required String deadline,
+    required int duration,
+    required String priority,
+    bool isScheduled = false,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/create'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'title': title,
+          'category': category,
+          'deadline': deadline,
+          'duration': duration.toString(),
+          'priority': priority,
+          'is_scheduled': isScheduled,
+          'is_synched': false,
+          'to_reschedule': false,
+          'user': 1,   //need to change this to dynamic user id
+          'status': 'To Do',
+          
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to create task: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error creating task: $e');
+    }
+  }
+
+// Not Working ( tested, url working, my be problem back end ) / Always return empty list
+/// function to fetch all tasks for a specific user
   Future<List<Map<String, dynamic>>> fetchAllTasks() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/read/all'),
+        Uri.parse('$baseUrl/user/1'), // by user id 
         headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final tasksData = data['tasks'] as List;
+        final tasksData = data['data'] as List;
 
         return tasksData.map((json) {
           return {
@@ -39,127 +84,46 @@ class TaskService {
     }
   }
 
+
+
+// depends on fetchAllTasks
+/// function to fetch tasks that need to be rescheduled
   Future<List<Map<String, dynamic>>> fetchTasksToReschedule() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/read/to_reschedule'),
-        headers: {'Content-Type': 'application/json'},
-      );
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/user/1'), // assuming this returns all tasks
+      headers: {'Content-Type': 'application/json'},
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return List<Map<String, dynamic>>.from(data['tasks']);
-      } else {
-        throw Exception('Failed to fetch tasks to reschedule: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error fetching tasks to reschedule: $e');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final tasksData = (data['data'] ?? []) as List;
+
+      return tasksData.where((json) => json['to_reschedule'] == true).map((json) {
+        return {
+          'id': json['id']?.toString() ?? '',
+          'title': json['title']?.toString() ?? '',
+          'category': json['category']?.toString() ?? '',
+          'deadline': json['deadline']?.toString() ?? DateTime.now().toIso8601String(),
+          'duration': json['duration']?.toString() ?? '60',
+          'priority': json['priority']?.toString() ?? 'Medium',
+          'is_scheduled': json['is_scheduled'] ?? false,
+          'is_synched': json['is_synched'] ?? false,
+          'to_reschedule': json['to_reschedule'] ?? false,
+          'user': json['user']?.toString() ?? '',
+          'status': json['status']?.toString() ?? 'To-do',
+        };
+      }).toList();
+    } else {
+      throw Exception('Failed to fetch tasks: ${response.statusCode}');
     }
+  } catch (e) {
+    throw Exception('Error fetching tasks to reschedule: $e');
   }
+}
 
-  Future<Map<String, dynamic>> addTask({
-    required String title,
-    required String category,
-    required String deadline,
-    required String duration,
-    required String priority,
-    bool isScheduled = false,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/write/add'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'title': title,
-          'category': category,
-          'deadline': deadline,
-          'duration': duration,
-          'priority': priority,
-          'is_scheduled': isScheduled,
-        }),
-      );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Failed to add task');
-      }
-    } catch (e) {
-      throw Exception('Error adding task: $e');
-    }
-  }
-
-  Future<Map<String, dynamic>> createTask({
-    required String title,
-    required String category,
-    required String deadline,
-    required int duration,
-    required String priority,
-    bool isScheduled = false,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/write/add'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'title': title,
-          'category': category,
-          'deadline': deadline,
-          'duration': duration.toString(),
-          'priority': priority,
-          'is_scheduled': isScheduled,
-          'to_reschedule': false,
-          'is_synched': false,
-          'status': 'To Do',
-          'user': 'test@gmail.com'
-        }),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Failed to create task: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error creating task: $e');
-    }
-  }
-
-  Future<Map<String, dynamic>> fetchTaskById(String taskId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/read/all'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final tasksData = data['tasks'] as List;
-
-        final taskData = tasksData.firstWhere(
-          (task) => task['id'].toString() == taskId,
-          orElse: () => null,
-        );
-
-        if (taskData != null) {
-          return {
-            'title': taskData['title'].toString(),
-            'category': taskData['category'].toString(),
-            'priority': taskData['priority'].toString(),
-            'status': taskData['status']?.toString() ?? 'To-do',
-            'deadline': taskData['deadline'].toString(),
-          };
-        } else {
-          throw Exception('Task not found');
-        }
-      } else {
-        throw Exception('Failed to fetch task: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error fetching task: $e');
-    }
-  }
-
+// The route is not implemented in the backend, so this function will not work until the backend is updated
   Future<List<Map<String, dynamic>>> searchTasks(String query) async {
     try {
       final response = await http.get(
@@ -208,6 +172,8 @@ class TaskService {
     }
   }
 
+
+// the route is not implemented in the backend, so this function will not work until the backend is updated
   Future<Map<String, dynamic>> deleteTaskById(int  taskId) async {
    final url = Uri.parse('$baseUrl/tasks/delete/$taskId');
   final response = await http.delete(url, headers: {'Content-Type': 'application/json'});
@@ -223,4 +189,71 @@ class TaskService {
     return {'success': false, 'message': message};
   }
  }
+
+
+
+// not working ( tested, the problem is with the taskid, in the firebase it is a string, but here it is an int )
+ Future<Map<String, dynamic>> fetchTaskById(String taskId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/$taskId'),  // Use the updated route to fetch task by ID
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final taskData = data['task'];
+
+      if (taskData != null) {
+        return {
+          'id': taskData['id'].toString(),
+          'title': taskData['title'].toString(),
+          'category': taskData['category'].toString(),
+          'priority': taskData['priority'].toString(),
+          'status': taskData['status']?.toString() ?? 'To-do',
+          'deadline': taskData['deadline'].toString(),
+          'duration': taskData['duration']?.toString() ?? '60',
+          'is_scheduled': taskData['is_scheduled'] ?? false,
+          'is_synched': taskData['is_synched'] ?? false,
+          'to_reschedule': taskData['to_reschedule'] ?? false,
+          'user': taskData['user']?.toString() ?? '',
+        };
+      } else {
+        throw Exception('Task not found');
+      }
+    } else {
+      throw Exception('Failed to fetch task: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Error fetching task: $e');
+  }
+}
+
+
+// not woorking, depends on fetchTaskById
+Future<String> fetchTaskTitle(String taskId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/$taskId'),  // Use the appropriate API endpoint
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final taskData = data['task'];
+
+      if (taskData != null) {
+        return taskData['title'].toString();  // Return the task's title
+      } else {
+        throw Exception('Task not found');
+      }
+    } else {
+      throw Exception('Failed to fetch task title: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Error fetching task title: $e');
+  }
+}
+
+
 }

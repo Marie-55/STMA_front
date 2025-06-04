@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/views/screens/weekly_timetable.dart';
 import '../../bloc/navigation/navigation_bloc.dart';
 import '../../bloc/navigation/navigation_event.dart';
 import '../../bloc/session/session_bloc.dart';
@@ -26,10 +27,11 @@ class MainLayout extends StatelessWidget {
     const HomeScreen(),        // index 0 - Calendar
     const TasksScreen(),       // index 1 - Tasks
     const NotificationScreen(),// index 2 - Notifications
-    const WelcomeScreen(),     // index 3 - Notes
+    const WeeklyTimetable(),     // index 3 - Notes
     const ProfileScreen(), 
     const SignupScreen(),      // index 4 - Profile
     const LoginScreen(),       // index 5
+    const WelcomeScreen()
 
     //const NotesScreen(),
     //const ProfileScreen(),
