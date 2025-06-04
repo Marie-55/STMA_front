@@ -6,7 +6,7 @@ import '../../bloc/task/task_event.dart';
 import '../../services/task_service.dart';
 
 class AddTaskModal extends StatefulWidget {
-  const AddTaskModal({Key? key}) : super(key: key);
+  const AddTaskModal({super.key});
 
   @override
   State<AddTaskModal> createState() => _AddTaskModalState();
@@ -264,7 +264,7 @@ class _AddTaskModalContentState extends State<_AddTaskModalContent> {
                 }
 
                 print(
-                    'Converting duration: ${_selectedDuration} to $durationMinutes minutes');
+                    'Converting duration: $_selectedDuration to $durationMinutes minutes');
 
                 final task = Task(
                   id: DateTime.now().millisecondsSinceEpoch.toString(),

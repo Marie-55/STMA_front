@@ -6,13 +6,9 @@ import '../../bloc/task/task_bloc.dart';
 import '../../bloc/task/task_event.dart';
 import '../../bloc/task/task_state.dart';
 import '../widgets/task_card.dart';
-import 'add_task.dart';
-import '../../bloc/navigation/navigation_bloc.dart';
-import '../../bloc/navigation/navigation_event.dart';
 import 'notification_screen.dart';
 import '../widgets/rescheduling_card.dart';
 import 'package:frontend/models/task.dart';
-import '../widgets/task_detail_modal.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
@@ -108,7 +104,7 @@ class _TasksScreenState extends State<TasksScreen> {
               );
             }
 
-            final allTasks = dummyTasksToReschedule;
+            final allTasks = state.tasks;
 
             final displayedTasks = allTasks.where((task) {
               // Apply search filter
@@ -232,38 +228,11 @@ class _TasksScreenState extends State<TasksScreen> {
                           itemCount: displayedTasks.length,
                           itemBuilder: (context, index) {
                             final task = displayedTasks[index];
+                            // print(task)
                             return GestureDetector(
-                              onTap: () {
-                                print('hhhhhhhhhhhhhhhhhhh');
-                                if (task.toReschedule) {
-                                  showDialog(
-                                    context: context,
-                                    barrierDismissible: true,
-                                    builder: (context) {
-                                      return ReschedulingCard(
-                                        title: task.title,
-                                        category: task.category,
-                                        missedDate: DateFormat('MMM dd, yyyy')
-                                            .format(task.deadline),
-                                        taskId: int.parse(task.id),
-                                        onReschedule: () {
-                                          Navigator.of(context).pop();
-                                          context
-                                              .read<TaskBloc>()
-                                              .add(LoadTasks());
-                                        },
-                                        onTaskDeleted: () {
-                                          context
-                                              .read<TaskBloc>()
-                                              .add(LoadTasks());
-                                        },
-                                      );
-                                    },
-                                  );
-                                }
-                                // else do nothing
-                              },
                               child: TaskCard(
+                                id: task.id,
+                                toReschedule: task.toReschedule,
                                 title: task.title,
                                 category: task.category,
                                 timeRange: '${task.duration} minutes',

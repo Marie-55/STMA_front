@@ -8,20 +8,22 @@ class TaskService {
   Future<List<Map<String, dynamic>>> fetchAllTasks() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/read/all'),
+        Uri.parse('$baseUrl/user/1'),
         headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final tasksData = data['tasks'] as List;
-
+        print(data);
+        final tasksData = data['data'] as List;
+        // print(tasksData);
         return tasksData.map((json) {
           return {
             'id': json['id']?.toString() ?? '',
             'title': json['title']?.toString() ?? '',
             'category': json['category']?.toString() ?? '',
-            'deadline': json['deadline']?.toString() ?? DateTime.now().toIso8601String(),
+            'deadline': json['deadline']?.toString() ??
+                DateTime.now().toIso8601String(),
             'duration': json['duration']?.toString() ?? '60',
             'priority': json['priority']?.toString() ?? 'Medium',
             'is_scheduled': json['is_scheduled'] ?? false,
@@ -50,7 +52,8 @@ class TaskService {
         final data = jsonDecode(response.body);
         return List<Map<String, dynamic>>.from(data['tasks']);
       } else {
-        throw Exception('Failed to fetch tasks to reschedule: ${response.statusCode}');
+        throw Exception(
+            'Failed to fetch tasks to reschedule: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error fetching tasks to reschedule: $e');
@@ -75,11 +78,12 @@ class TaskService {
           'deadline': deadline,
           'duration': duration,
           'priority': priority,
-          'is_scheduled': isScheduled,
+          // 'is_scheduled': isScheduled,
         }),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Task added successfully: ${response.body}');
         return jsonDecode(response.body);
       } else {
         throw Exception('Failed to add task');
@@ -99,7 +103,7 @@ class TaskService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/write/add'),
+        Uri.parse('$baseUrl/create'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'title': title,
@@ -208,19 +212,20 @@ class TaskService {
     }
   }
 
-  Future<Map<String, dynamic>> deleteTaskById(int  taskId) async {
-   final url = Uri.parse('$baseUrl/tasks/delete/$taskId');
-  final response = await http.delete(url, headers: {'Content-Type': 'application/json'});
+  Future<Map<String, dynamic>> deleteTaskById(int taskId) async {
+    final url = Uri.parse('$baseUrl/tasks/delete/$taskId');
+    final response =
+        await http.delete(url, headers: {'Content-Type': 'application/json'});
 
-  if (response.statusCode == 200) {
-    return {'success': true};
-  } else {
-    String message = 'Failed to delete task.';
-    try {
-      final errorBody = json.decode(response.body);
-      message = errorBody['error'] ?? message;
-    } catch (_) {}
-    return {'success': false, 'message': message};
+    if (response.statusCode == 200) {
+      return {'success': true};
+    } else {
+      String message = 'Failed to delete task.';
+      try {
+        final errorBody = json.decode(response.body);
+        message = errorBody['error'] ?? message;
+      } catch (_) {}
+      return {'success': false, 'message': message};
+    }
   }
- }
 }

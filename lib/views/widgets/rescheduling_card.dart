@@ -13,14 +13,14 @@ class ReschedulingCard extends StatefulWidget {
   final VoidCallback onTaskDeleted;
 
   const ReschedulingCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.category,
     required this.missedDate,
     required this.taskId,
     required this.onReschedule,
     required this.onTaskDeleted,
-  }) : super(key: key);
+  });
 
   @override
   State<ReschedulingCard> createState() => _ReschedulingCardState();

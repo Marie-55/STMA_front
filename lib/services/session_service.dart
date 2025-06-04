@@ -8,19 +8,21 @@ class SessionService {
   Future<List<Session>> fetchAllSessions() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/read/all'),
+        Uri.parse('$baseUrl/'),
         headers: {
           'Content-Type': 'application/json',
         },
       );
+      // print(response.body);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final sessionsData = data['session'] as List;
-
+        final sessionsData = data['data'] as List;
         return sessionsData.map((json) {
           final date = json['date'].toString();
           String startTime = json['start_time']?.toString() ?? '00:00:00';
+
+          // print(json);
 
           return Session(
             id: json['id'].toString(),
@@ -73,7 +75,8 @@ class SessionService {
   Future<List<dynamic>> fetchSessionsForDay(DateTime date) async {
     final formattedDate =
         "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
-    final url = Uri.parse('https:/stma-back.onrender.com/api/day/read/day_sessions/$formattedDate');
+    final url = Uri.parse(
+        'https:/stma-back.onrender.com/api/day/read/day_sessions/$formattedDate');
 
     final response = await http.get(url);
 
